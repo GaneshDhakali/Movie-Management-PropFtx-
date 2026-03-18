@@ -1,0 +1,21 @@
+{
+  "name": "cineplex",
+  "version": "1.0.0",
+  "description": "* Add, update and delete movies with details like name, genre, release year and \r   rating\r * Search movies by name with case-insensitive matching\r * Confirmation prompt before deleting a movie\r * Loading indicator during API requests for better user feedback\r * Error message display with automatic dismissal\r * Inline edit mode for quick movie updates\r * Automatic refresh of movie list after successful operations\r * MongoDB schema validation for required fields and rating limits\r * Clean MVC-based backend structure with centralized error handling\r * RESTful API integration between React frontend and Express backend\r * Responsive card-based UI for movie listing\r * Deployment of frontend and backend on cloud platforms",
+  "main": "index.js",
+  "scripts": {
+  "server": "nodemon backend/server.js",
+  "client": "npm start --prefix frontend",
+  "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
