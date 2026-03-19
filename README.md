@@ -1,98 +1,122 @@
-# 🎬 Cineplex – Movie Management App
-
-## Features
-
-* Add, update and delete movies with details like name, genre, release year and 
-  rating
-* Search movies by name with case-insensitive matching
-* Confirmation prompt before deleting a movie
-* Loading indicator during API requests for better user feedback
-* Error message display with automatic dismissal
-* Inline edit mode for quick movie updates
-* Automatic refresh of movie list after successful operations
-* MongoDB schema validation for required fields and rating limits
-* Clean MVC-based backend structure with centralized error handling
-* RESTful API integration between React frontend and Express backend
-* Responsive card-based UI for movie listing
-* Deployment of frontend and backend on cloud platforms
-
+# 🎬 Cineplex – Full Stack Movie Management Application
 
 ---
 
-## Tech Stack
+##  Features
+
+- Add new movies with **name, genre, release year and rating**
+- Update movies using **inline edit mode**
+- Delete movies with **confirmation popup**
+- Search movies by name with **case-insensitive backend filtering**
+- **Frontend + Backend validation**
+  - Rating restricted between **1 – 10**
+  - Release year restricted between **1888 – Current Year**
+- **Auto refresh movie list** after CRUD operations
+- **Loading indicator** during API calls
+- **Error toast notification** with auto-dismiss
+- Sticky **glass navigation header**
+- Cinematic **rolling hero movie cards**
+- Rating colour logic (**Low / Medium / High**)
+- Responsive **OTT-style card layout**
+- Smooth **hover micro-interactions**
+- Cloud deployment (Frontend + Backend)
+
+---
+
+##  Tech Stack
+
+### Frontend
+- React.js
+- Axios
+- Inline CSS (Glassmorphism UI)
+- Environment Variables
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- MVC Architecture
+- Custom Middleware Validation
+- Global Error Handler
+
+---
+
+##  Project Structure
+
+### Backend (MVC)
+
+backend/
+│
+├── config/
+├── controllers/
+├── middleware/
+├── models/
+├── routes/
+└── server.js
 
 ### Frontend
 
-* React.js
-* Axios
-* Inline CSS styling
+frontend/
+│
+├── public/
+├── src/
+│ ├── App.js
+│ ├── index.js
+│ └── styles
 
-### Backend
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
 
 ---
 
-## Project Structure
+## 🔗 API Endpoints
 
-Backend follows a simple MVC pattern:
-
-* **models/** → MongoDB schema
-* **controllers/** → Business logic for CRUD operations
-* **routes/** → API routes
-* **middleware/** → Validation and global error handling
-
-Frontend is built using functional components and React hooks for state management.
-
----
-
-## API Endpoints
-
- |Method  |  Endpoint               |   Description    
- |------  |------------------------ | -------------- 
- |GET     | /api/movies             |   Get all movies 
- |POST    | /api/movies             |   Create movie   
- |PUT     | /api/movies/:id         |   Update movie   
- |DELETE  | /api/movies/:id         |   Delete movie   
- |GET     | /api/movies/search?name=|   Search movie  
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/movies | Fetch all movies |
+| POST | /api/movies | Create new movie |
+| PUT | /api/movies/:id | Update movie |
+| DELETE | /api/movies/:id | Delete movie |
+| GET | /api/movies/search?name= | Search movie |
 
 ---
 
-## Deployment
+## 🌐 Live Deployment
 
-* Backend deployed on **Render**  
-* Frontend deployed on **Vercel / Netlify**
+**Backend (Render)**  
+https://cineplex-backend-22vo.onrender.com/api/movies  
 
-## LINKS
+**Frontend (Netlify)**  
+https://cineplex-22.netlify.app/
 
-* Backend : https://cineplex-backend-22vo.onrender.com/api/movies
-* Frontend: https://cineplex-moviemanager.netlify.app/
+> NOTE: SINCE THE BACKEND SERVER IS HOSTED ON A FREE HOSTING SERVICE, THE SERVER MAY TAKE A FEW SECONDS FOR THE FIRST REQUEST AS THE HOSTED INSTANCE NEED TO WAKE UP.
 
-NOTE: SINCE THE BACKEND SERVER IS HOSTED ON A FREE HOSTING SERVICE, THE SERVER MAY TAKE A FEW SECONDS FOR THE FIRST REQUEST AS THE HOSTED INSTANCE NEED TO WAKE UP.
+---
+## ✅ Enhancements Implemented
+
+- Strengthened validation on both frontend and backend layers
+- Optimised movie search behaviour by triggering search on user action
+- Improved UI responsiveness across different screen sizes
+- Introduced cinematic hero banner and glass card styling
+- Added rating visual indicators and hover micro-interactions
+- Refactored project structure and improved Git hygiene practices
+
 ---
 
-##  How to Run Locally
+### Run Backend
 
-### Backend
-
-```
 cd backend
 npm install
 npm run dev
-```
 
-### Frontend
+### Run Frontend
 
-```
-cd frontend
+cd backend
 npm install
-npm start
-```
-### Run Both Using Concurrently
-
-```
 npm run dev
-```
+
+
+### Run Both (Concurrent Mode)
+
+npm install
+npm run dev
+

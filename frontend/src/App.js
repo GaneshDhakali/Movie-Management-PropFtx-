@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+const API = process.env.REACT_APP_API_URL;
 
 function App() {
 
-  // storing all movies fetched from backend
   const [movies, setMovies] = useState([]);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [deletingId,setDeletingId]=useState(null);
+  const [fade, setFade] = useState(true);
 
-  // form state for adding / editing movie
   const [form, setForm] = useState({
     movieName: "",
     genre: "",
@@ -14,92 +16,73 @@ function App() {
     rating: ""
   });
 
-  // if user clicks edit we store that movie id here
   const [editingId, setEditingId] = useState(null);
-
-  // search input value
   const [search, setSearch] = useState("");
-
-  // used to show error toast message
   const [errorMsg, setErrorMsg] = useState("");
-
-  // simple loading state for API calls
   const [loading, setLoading] = useState(false);
 
-  // fetch movies once page loads
-  useEffect(() => {
-    fetchMovies();
-  }, []);
+  useEffect(() => { fetchMovies(); }, []);
 
-  // function to get all movies
+  //  hero auto rolling
+  useEffect(()=>{
+    if(movies.length===0) return;
+
+    const interval=setInterval(()=>{
+      setFade(false);
+
+      setTimeout(()=>{
+        setHeroIndex(prev=> (prev+1)%movies.length);
+        setFade(true);
+      },300);
+
+    },3000);
+
+    return ()=>clearInterval(interval);
+
+  },[movies]);
+
   const fetchMovies = async () => {
     try {
       setLoading(true);
       setErrorMsg("");
-
-      const res = await axios.get(
-        "https://cineplex-backend-22vo.onrender.com/api/movies"
-      );
-
+      const res = await axios.get(`${API}/api/movies`);
       setMovies(res.data.data);
-
-    } catch (error) {
-      console.log(error);
+    } catch {
       setErrorMsg("Failed to load movies");
     } finally {
       setLoading(false);
     }
   };
 
-  // searching movies by name
   const searchMovies = async (value) => {
-
     setSearch(value);
-
-    // if search box cleared load full list again
     if (value === "") {
       fetchMovies();
       return;
     }
-
     try {
       setLoading(true);
       setErrorMsg("");
-
-      const res = await axios.get(
-        `https://cineplex-backend-22vo.onrender.com/api/movies/search?name=${value}`
-      );
-
+      const res = await axios.get(`${API}/api/movies/search?name=${value}`);
       setMovies(res.data.data);
-
-    } catch (error) {
-      console.log(error);
+    } catch {
       setErrorMsg("Search failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // auto remove error message after few seconds
   useEffect(() => {
     if (errorMsg) {
-      const timer = setTimeout(() => {
-        setErrorMsg("");
-      }, 5000);
-
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setErrorMsg(""), 5000);
+      return () => clearTimeout(t);
     }
   }, [errorMsg]);
 
-  // updating form input values
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // handles both add and update movie
   const addMovie = async (e) => {
     e.preventDefault();
 
@@ -127,24 +110,13 @@ function App() {
       setErrorMsg("");
 
       if (editingId) {
-        // updating existing movie
-        await axios.put(
-          `https://cineplex-backend-22vo.onrender.com/api/movies/${editingId}`,
-          form
-        );
+        await axios.put(`${API}/api/movies/${editingId}`, form);
         setEditingId(null);
       } else {
-        // adding new movie
-        await axios.post(
-          "https://cineplex-backend-22vo.onrender.com/api/movies",
-          form
-        );
+        await axios.post(`${API}/api/movies`, form);
       }
 
-      // refresh list after success
       await fetchMovies();
-
-      // reset search and form
       setSearch("");
 
       setForm({
@@ -155,81 +127,53 @@ function App() {
       });
 
     } catch (error) {
-
-      // showing backend error if present
-      if (error.response) {
-        setErrorMsg(error.response.data.message);
-      } else {
-        setErrorMsg("Something went wrong");
-      }
-
+      if (error.response) setErrorMsg(error.response.data.message);
+      else setErrorMsg("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  // delete movie with confirmation popup
   const deleteMovie = async (id) => {
 
-    if (!window.confirm("Are you sure you want to delete this movie?"))
-      return;
+  if (!window.confirm("Are you sure you want to delete this movie?"))
+    return;
 
+  setDeletingId(id);
+
+  setTimeout(async () => {
     try {
-      await axios.delete(`https://cineplex-backend-22vo.onrender.com/api/movies/${id}`);
-      await fetchMovies();
-    } catch (error) {
+      await axios.delete(`${API}/api/movies/${id}`);
+      fetchMovies();
+    } catch {
       setErrorMsg("Delete failed");
     }
-  };
+    setDeletingId(null);
+  },300);
+
+};
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "20px",
-        background:
-          "radial-gradient(circle at 20% 20%, rgba(0,140,255,0.25), transparent 40%), radial-gradient(circle at 80% 10%, rgba(0,200,255,0.18), transparent 40%), radial-gradient(circle at 50% 90%, rgba(0,80,160,0.25), transparent 40%), linear-gradient(180deg, #02070d 0%, #04111c 50%, #01060b 100%)",
-        fontFamily: "Arial"
-      }}
-    >
-    {errorMsg && (
-      <div
-        style={{
-          position:"fixed",
-          top:"20px",
-          right:"20px",
-          background:"#ff5252",
-          padding:"12px 20px",
-          color:"white",
-          borderRadius:"8px",
-          boxShadow:"0 10px 25px rgba(0,0,0,0.5)",
-          zIndex:1000
-        }}
-      >
-        {errorMsg}
-      </div>
-    )}
-    <div
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-        display: "flex",
-        justifyContent: "space-between",
-        flexWrap:"wrap",
-        gap:"10px",
-        alignItems: "center",
-        padding: "15px 20px",
-        marginBottom: "40px",
-        backdropFilter: "blur(12px)",
-        background: "rgba(0,0,0,0.35)",
-        borderRadius: "12px"
-      }}
-    >
+    <div style={pageStyle}>
 
-        <h2
+      {errorMsg && <div style={toast}>{errorMsg}</div>}
+
+      {/*  Sticky Header */}
+      <div style={header}>
+       <h2
+              onClick={()=>{
+            fetchMovies();
+            setSearch("");
+            setEditingId(null);
+            setForm({
+              movieName:"",
+              genre:"",
+              releaseYear:"",
+              rating:""
+            });
+          }}
           style={{
-            fontSize: "26px",
+            fontSize: "30px",
             fontWeight: "800",
             letterSpacing: "2px",
             background: "linear-gradient(90deg,#00e5ff,#4fc3f7,#81d4fa)",
@@ -238,237 +182,313 @@ function App() {
             textShadow: "0 0 12px rgba(255, 162, 0, 0.9)",
             cursor: "pointer"
           }}
-          >
-          🎬CINEPLEX
-        </h2>
-    
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        >🎬 CINEPLEX</h2>
 
-        <input
-          placeholder="Search movies..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            padding: "8px 14px",
-            borderRadius: "20px",
-            border: "none",
-            outline: "none",
-            background: "rgba(255,255,255,0.1)",
-            color: "white"
-          }}
-        />
+        <div style={{display:"flex",gap:10}}>
+          <input
+            placeholder="Search movies..."
+            value={search}
+            onChange={(e)=>setSearch(e.target.value)}
+            style={searchInput}
+          />
+          <button style={searchBtn} onClick={()=>searchMovies(search)}>Search</button>
+        </div>
+      </div>
 
-        <button
-          onClick={() => searchMovies(search)}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "20px",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          Search
-        </button>
+      {/*  NEW HERO ROLLING CINEMA */}
+      {movies.length>0 && (
+        <div style={{ ...heroCard, opacity: fade ? 1 : 0 }}>
+          <h1
+  style={{
+    fontSize:"56px",
+    fontWeight:"900",
+    letterSpacing:"2px",
+    marginBottom:"10px",
+    textShadow:"0 0 20px rgba(0,0,0,0.9)"
+  }}
+>
+  {movies[heroIndex].movieName}
+</h1>
 
-      </div> 
+<p style={{opacity:0.8,fontSize:"18px"}}>
+  {movies[heroIndex].genre}
+</p>
 
-    </div>    
+<h2
+  style={{
+    marginTop:"8px",
+    color:"#ffd54f",
+    textShadow:"0 0 14px rgba(255,200,0,0.9)"
+  }}
+>
+ ⭐ {movies[heroIndex].rating}
+</h2>
+        </div>
+      )}
 
       <h1
         style={{
-          textAlign: "center",
-          color: "white",
-          marginBottom: "30px",
-          fontSize: "36px"
+          textAlign:"center",
+          fontSize:"42px",
+          fontWeight:"900",
+          letterSpacing:"2px",
+          marginBottom:"25px",
+          background:"linear-gradient(90deg,#ff9800,#ffca28,#fff176)",
+          WebkitBackgroundClip:"text",
+          WebkitTextFillColor:"transparent",
+          textShadow:"0 0 18px rgba(255,180,0,0.9)"
         }}
       >
-        Movies
+      🔥 Movies 🔥
       </h1>
 
-      <form
-        onSubmit={addMovie} noValidate
-        style={{
-          display:"flex",
-          justifyContent:"center",
-          gap:"10px",
-          flexWrap:"wrap",
-          width:"100%",
-          maxWidth:"1100px",
-          margin:"0 auto 40px auto"
-        }}
-      >
-
-        <input
-          name="movieName"
-          placeholder="Movie Name"
-          value={form.movieName}
-          onChange={handleChange}
-          style={inputStyle}
-        />
-
-        <input
-          name="genre"
-          placeholder="Genre"
-          value={form.genre}
-          onChange={handleChange}
-          style={inputStyle}
-        />
-
-        <input
-          type="text"
-          name="releaseYear"
-          maxLength="4"
-          placeholder="Release Year"
-          value={form.releaseYear}
-          onChange={(e) => {
-            const value = e.target.value;
-
-            if (/^\d{0,4}$/.test(value)) {
-              setForm({ ...form, releaseYear: value });
-            }
+     
+      <form onSubmit={addMovie} noValidate style={formWrap}>
+        <input name="movieName" placeholder="Movie Name" value={form.movieName} onChange={handleChange} style={modernInput} 
+        onFocus={(e)=>{
+          e.target.style.boxShadow="0 0 12px rgba(0,229,255,0.8)";
           }}
-          style={inputStyle}
-        />
+          onBlur={(e)=>{
+          e.target.style.boxShadow="none";
+          }}/>
+        <input name="genre" placeholder="Genre" value={form.genre} onChange={handleChange} 
+        onFocus={(e)=>{
+            e.target.style.boxShadow="0 0 12px rgba(0,229,255,0.8)";
+          }}
 
-        <input
-          type="number"
-          name="rating"
-          step="0.1"
-          min="1"
-          max="10"
-          placeholder="Rating"
+          onBlur={(e)=>{
+            e.target.style.boxShadow="none";
+          }}
+
+          style={modernInput}/>
+        <input type="text" name="releaseYear" maxLength="4" placeholder="Year"
+          value={form.releaseYear}
+          onChange={(e)=>{
+            const v=e.target.value;
+            if(/^\d{0,4}$/.test(v)) setForm({...form,releaseYear:v});
+          }} onFocus={(e)=>{
+            e.target.style.boxShadow="0 0 12px rgba(0,229,255,0.8)";
+          }}
+
+          onBlur={(e)=>{
+            e.target.style.boxShadow="none";
+          }}
+
+          style={modernInput}
+        />
+        <input type="number" step="0.1" min="1" max="10"
+          name="rating" placeholder="Rating"
           value={form.rating}
           onChange={handleChange}
-          style={inputStyle}
-        />
+           onFocus={(e)=>{
+              e.target.style.boxShadow="0 0 12px rgba(0,229,255,0.8)";
+            }}
 
-        <button style={addBtn}>
+            onBlur={(e)=>{
+              e.target.style.boxShadow="none";
+            }}
+
+            style={modernInput}
+                  />
+        <button
+          style={addBtn}
+          onMouseEnter={(e)=>{
+            e.currentTarget.style.transform="scale(1.05)";
+            e.currentTarget.style.boxShadow="0 0 18px rgba(255,152,0,0.9)";
+          }}
+          onMouseLeave={(e)=>{
+            e.currentTarget.style.transform="scale(1)";
+            e.currentTarget.style.boxShadow="none";
+          }}
+        >
           {editingId ? "Update Movie" : "Add Movie"}
         </button>
-
       </form>
 
+      {/*  MOVIE GLASS CARDS */}
       {loading ? (
 
-          <h2 style={{color:"white", textAlign:"center"}}>
-            Loading movies...
-          </h2>
+        <div style={{
+          display:"flex",
+          gap:"20px",
+          flexWrap:"wrap",
+          justifyContent:"center"
+        }}>
+          {[1,2,3,4,5,6].map(i=>(
+            <div
+              key={i}
+              style={{
+                width:"220px",
+                height:"160px",
+                borderRadius:"18px",
+                background:
+                  "linear-gradient(90deg,#1e2a38 25%,#2e3f55 37%,#1e2a38 63%)",
+                backgroundSize:"400% 100%",
+                animation:"shimmer 1.4s infinite"
+              }}
+            />
+          ))}
+        </div>
 
-        ) : movies.length === 0 ? (
-
-          <h2 style={{color:"white", textAlign:"center"}}>
-            No movies found! 
-          </h2>
-
-        ) : (
-
-          <div
-            style={{
-              display:"flex",
-              flexWrap:"wrap",
-              justifyContent:"center",
-              gap:"20px"
-            }}
-          >
-          {movies.map((movie) => (
-
+      ) : movies.length===0 ? (
+        <h2 style={{color:"white",textAlign:"center"}}>No movies found</h2>
+      ) : (
+        <div style={grid}>
+          {movies.map(movie=>(
             <div
               key={movie._id}
-              style={cardStyle}
+              style={{
+                ...glassCard,
+                opacity: deletingId===movie._id ? 0 : 1,
+                transform:
+                  deletingId===movie._id
+                    ? "scale(0.8)"
+                    : "scale(1)"
+              }}
               onMouseEnter={(e)=>{
-                e.currentTarget.style.transform="scale(1.07)";
-                e.currentTarget.style.boxShadow="0 30px 60px rgba(0,0,0,1)";
+                e.currentTarget.style.transform="scale(1.06)";
+                e.currentTarget.style.boxShadow="0 35px 70px rgba(0,0,0,0.9)";
               }}
               onMouseLeave={(e)=>{
                 e.currentTarget.style.transform="scale(1)";
-                e.currentTarget.style.boxShadow="0 10px 25px rgba(0,0,0,0.7)";
+                e.currentTarget.style.boxShadow="0 15px 30px rgba(0,0,0,0.6)";
               }}
             >
-              <h3 style={{color:"white"}}>{movie.movieName}</h3>
-              <p style={{color:"#cfd8dc"}}><b>Genre:</b> {movie.genre}</p>
-              <p style={{color:"#cfd8dc"}}><b>Year:</b> {movie.releaseYear}</p>
-              <p style={{color:"#ffcc00"}}>⭐ {movie.rating}</p>
+              <h3>{movie.movieName}</h3>
+              <p>{movie.genre}</p>
+              <p>{movie.releaseYear}</p>
+              <h3
+                style={{
+                  color:
+                    movie.rating <= 3
+                      ? "#ff5252"
+                      : movie.rating <= 7
+                      ? "#ffca28"
+                      : "#66bb6a"
+                }}
+              >
+              ⭐ {movie.rating}
+              </h3>
 
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:"10px"}}>
-
-                <button
-                  style={editBtn}
+              <div style={{display:"flex",justifyContent:"space-between"}}>
+                <button style={editBtn}
                   onClick={()=>{
-                    setForm({
-                      movieName: movie.movieName,
-                      genre: movie.genre,
-                      releaseYear: movie.releaseYear,
-                      rating: movie.rating
-                    });
+                    setForm(movie);
                     setEditingId(movie._id);
-                  }}
-                >
+                  }}>
                   Edit
                 </button>
-
-                <button
-                  style={deleteBtn}
-                  onClick={()=>deleteMovie(movie._id)}
-                >
+                <button style={deleteBtn}
+                  onClick={()=>deleteMovie(movie._id)}>
                   Delete
                 </button>
-
               </div>
-
             </div>
+          ))}
+        </div>
+      )}
 
-        ))}
-
-       </div>
-
-      )}</div>
+    </div>
   );
 }
 
-const inputStyle = {
-  padding:"10px",
-  borderRadius:"6px",
-  border:"none",
-  width:"100%",
-  maxWidth:"220px"
+const pageStyle={
+  minHeight:"100vh",
+  padding:20,
+  background:"linear-gradient(180deg,#02070d,#04111c,#01060b)",
+  fontFamily:"sans-serif"
 };
 
-const addBtn = {
-  padding:"10px 20px",
-  background:"#ff9800",
-  border:"none",
-  borderRadius:"6px",
-  cursor:"pointer",
-  fontWeight:"bold"
+const header={
+  position:"sticky",
+  top:0,
+  backdropFilter:"blur(20px)",
+  background:"rgba(0,0,0,0.4)",
+  padding:15,
+  display:"flex",
+  justifyContent:"space-between",
+  alignItems:"center",
+  borderRadius:14,
+  marginBottom:30,
+  zIndex:100
 };
 
-const cardStyle = {
-  width: "100%",
-  maxWidth:"220px",
-  background: "linear-gradient(145deg,#1b2c36,#0f1f29)",
-  padding: "20px",
-  borderRadius: "12px",
-  boxShadow: "0 10px 25px rgba(0,0,0,0.7)",
-  transition: "0.35s",
-  cursor: "pointer"
-};
 
-const editBtn = {
-  background:"#2196f3",
-  border:"none",
-  padding:"6px 12px",
+const heroCard={
+  height:"260px",
+  borderRadius:"22px",
+  padding:"40px",
+  marginBottom:"40px",
+  background:
+    "linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 100%), linear-gradient(120deg,#0f2027,#203a43,#2c5364)",
   color:"white",
-  borderRadius:"6px",
+  display:"flex",
+  flexDirection:"column",
+  justifyContent:"center",
+  boxShadow:"0 40px 80px rgba(0,0,0,0.9)",
+  transition:"0.6s"
+};
+
+const formWrap={
+  display:"flex",
+  flexWrap:"wrap",
+  gap:10,
+  justifyContent:"center",
+  marginBottom:30
+};
+
+const modernInput={
+  padding:12,
+  borderRadius:30,
+  border:"1px solid rgba(255,255,255,0.2)",
+  background:"rgba(255,255,255,0.05)",
+  color:"white",
+  boxShadow:"0 0 0 rgba(0,0,0,0)",
+  transition:"0.3s"
+};
+
+const glassCard={
+  width:220,
+  padding:20,
+  borderRadius:18,
+  background:"rgba(255,255,255,0.06)",
+  backdropFilter:"blur(18px)",
+  boxShadow:"0 15px 30px rgba(0,0,0,0.6)",
+  color:"white",
+  transition:"all 0.35s ease",
   cursor:"pointer"
 };
 
-const deleteBtn = {
-  background:"#e50914",
-  border:"none",
-  padding:"6px 12px",
-  color:"white",
-  borderRadius:"6px",
-  cursor:"pointer"
+const grid={
+  display:"flex",
+  flexWrap:"wrap",
+  gap:20,
+  justifyContent:"center"
 };
+
+const addBtn={background:"#ff9800",border:"none",padding:"10px 20px",borderRadius:20,transition:"0.25s"};
+const editBtn={background:"#2196f3",border:"none",padding:"6px 12px",borderRadius:8,color:"white"};
+const deleteBtn={background:"#e50914",border:"none",padding:"6px 12px",borderRadius:8,color:"white"};
+
+const toast={
+  position:"fixed",
+  top:20,
+  right:20,
+  background:"#ff5252",
+  padding:"12px 20px",
+  color:"white",
+  borderRadius:8,
+  zIndex:999
+};
+
+const searchInput={padding:8,borderRadius:20,border:"none"};
+const searchBtn={padding:"8px 16px",borderRadius:20,border:"none"};
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(`
+@keyframes shimmer {
+  0% { background-position: 100% 0 }
+  100% { background-position: -100% 0 }
+}
+`, styleSheet.cssRules.length);
 
 export default App;
