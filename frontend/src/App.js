@@ -184,7 +184,16 @@ function App() {
           }}
         >🎬 CINEPLEX</h2>
 
-        <div style={{display:"flex",gap:10}}>
+        <div
+          style={{
+            display:"flex",
+            gap:"8px",
+            flexWrap:"wrap",
+            
+            alignItems:"center",
+            flexShrink:0
+          }}
+        >
           <input
             placeholder="Search movies..."
             value={search}
@@ -197,32 +206,38 @@ function App() {
 
       {/*  NEW HERO ROLLING CINEMA */}
       {movies.length>0 && (
-        <div style={{ ...heroCard, opacity: fade ? 1 : 0 }}>
+                <div
+          style={{
+            ...heroCard,
+            opacity: fade ? 1 : 0,
+            transform: fade ? "scale(1.05)" : "scale(0.95)"
+          }}
+        >
           <h1
-  style={{
-    fontSize:"56px",
-    fontWeight:"900",
-    letterSpacing:"2px",
-    marginBottom:"10px",
-    textShadow:"0 0 20px rgba(0,0,0,0.9)"
-  }}
->
-  {movies[heroIndex].movieName}
-</h1>
+    style={{
+      fontSize:"clamp(28px,5vw,56px)",
+      fontWeight:"900",
+      letterSpacing:"2px",
+      marginBottom:"10px",
+      textShadow:"0 0 20px rgba(0,0,0,0.9)"
+    }}
+    >
+    {movies[heroIndex].movieName}
+  </h1>
 
-<p style={{opacity:0.8,fontSize:"18px"}}>
-  {movies[heroIndex].genre}
-</p>
+  <p style={{opacity:0.8,fontSize:"18px"}}>
+    {movies[heroIndex].genre}
+  </p>
 
-<h2
-  style={{
-    marginTop:"8px",
-    color:"#ffd54f",
-    textShadow:"0 0 14px rgba(255,200,0,0.9)"
-  }}
->
- ⭐ {movies[heroIndex].rating}
-</h2>
+  <h2
+    style={{
+      marginTop:"8px",
+      color:"#ffd54f",
+      textShadow:"0 0 14px rgba(255,200,0,0.9)"
+    }}
+  >
+  ⭐ {movies[heroIndex].rating}
+  </h2>
         </div>
       )}
 
@@ -347,8 +362,7 @@ function App() {
               }}
               onMouseEnter={(e)=>{
                 e.currentTarget.style.transform="scale(1.06)";
-                e.currentTarget.style.boxShadow="0 35px 70px rgba(0,0,0,0.9)";
-              }}
+                e.currentTarget.style.boxShadow="0 35px 70px rgba(0,0,0,0.9), 0 0 18px rgba(0,229,255,0.3)";              }}
               onMouseLeave={(e)=>{
                 e.currentTarget.style.transform="scale(1)";
                 e.currentTarget.style.boxShadow="0 15px 30px rgba(0,0,0,0.6)";
@@ -395,7 +409,12 @@ function App() {
 const pageStyle={
   minHeight:"100vh",
   padding:20,
-  background:"linear-gradient(180deg,#02070d,#04111c,#01060b)",
+  background: `
+      radial-gradient(circle at 20% 20%, rgba(0,140,255,0.25), transparent 40%),
+      radial-gradient(circle at 80% 10%, rgba(0,200,255,0.18), transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(0,80,160,0.25), transparent 40%),
+      linear-gradient(180deg,#02070d,#04111c,#01060b)
+      `,
   fontFamily:"sans-serif"
 };
 
@@ -408,8 +427,11 @@ const header={
   display:"flex",
   justifyContent:"space-between",
   alignItems:"center",
+  flexWrap:"wrap",   
+  gap:"10px",        
   borderRadius:14,
   marginBottom:30,
+  boxShadow:"0 8px 40px rgba(0,0,0,0.7)",
   zIndex:100
 };
 
@@ -419,14 +441,14 @@ const heroCard={
   borderRadius:"22px",
   padding:"40px",
   marginBottom:"40px",
-  background:
-    "linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 100%), linear-gradient(120deg,#0f2027,#203a43,#2c5364)",
+  background:"linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 100%), linear-gradient(120deg,#0f2027,#203a43,#2c5364)",
   color:"white",
   display:"flex",
   flexDirection:"column",
   justifyContent:"center",
   boxShadow:"0 40px 80px rgba(0,0,0,0.9)",
-  transition:"0.6s"
+  transition:"opacity 0.6s ease, transform 0.8s ease",
+  border:"1px solid rgba(255,255,255,0.08)",
 };
 
 const formWrap={
@@ -440,9 +462,11 @@ const formWrap={
 const modernInput={
   padding:12,
   borderRadius:30,
-  border:"1px solid rgba(255,255,255,0.2)",
+  outline:"none",
+  border:"1px solid rgba(255,255,255,0.15)",
   background:"rgba(255,255,255,0.05)",
   color:"white",
+  width:"180px",
   boxShadow:"0 0 0 rgba(0,0,0,0)",
   transition:"0.3s"
 };
@@ -452,8 +476,9 @@ const glassCard={
   padding:20,
   borderRadius:18,
   background:"rgba(255,255,255,0.06)",
+  border:"1px solid rgba(255,255,255,0.08)",
   backdropFilter:"blur(18px)",
-  boxShadow:"0 15px 30px rgba(0,0,0,0.6)",
+  boxShadow:"0 20px 45px rgba(0,0,0,0.7)",
   color:"white",
   transition:"all 0.35s ease",
   cursor:"pointer"
@@ -466,7 +491,7 @@ const grid={
   justifyContent:"center"
 };
 
-const addBtn={background:"#ff9800",border:"none",padding:"10px 20px",borderRadius:20,transition:"0.25s"};
+const addBtn={background:"#ff9800",border:"none",padding:"10px 20px",borderRadius:20,transition:"all 0.25s ease"};
 const editBtn={background:"#2196f3",border:"none",padding:"6px 12px",borderRadius:8,color:"white"};
 const deleteBtn={background:"#e50914",border:"none",padding:"6px 12px",borderRadius:8,color:"white"};
 
@@ -481,7 +506,12 @@ const toast={
   zIndex:999
 };
 
-const searchInput={padding:8,borderRadius:20,border:"none"};
+const searchInput={
+  padding:8,
+  borderRadius:20,
+  border:"none",
+  minWidth:"160px"   
+};
 const searchBtn={padding:"8px 16px",borderRadius:20,border:"none"};
 const styleSheet = document.styleSheets[0];
 styleSheet.insertRule(`
