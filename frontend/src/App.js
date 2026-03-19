@@ -39,7 +39,7 @@ function App() {
 
     return ()=>clearInterval(interval);
 
-  },[movies]);
+  },[movies.length]);
 
   const fetchMovies = async () => {
     try {
@@ -47,6 +47,7 @@ function App() {
       setErrorMsg("");
       const res = await axios.get(`${API}/api/movies`);
       setMovies(res.data.data);
+      setHeroIndex(0);
     } catch {
       setErrorMsg("Failed to load movies");
     } finally {
@@ -55,6 +56,9 @@ function App() {
   };
 
   const searchMovies = async (value) => {
+
+    if(loading) return;
+
     setSearch(value);
     if (value === "") {
       fetchMovies();
@@ -197,7 +201,14 @@ function App() {
           <input
             placeholder="Search movies..."
             value={search}
-            onChange={(e)=>setSearch(e.target.value)}
+            onChange={(e)=>{
+              setSearch(e.target.value);
+            }}
+            onKeyDown={(e)=>{
+              if(e.key==="Enter"){
+                searchMovies(search);
+              }
+            }}
             style={searchInput}
           />
           <button style={searchBtn} onClick={()=>searchMovies(search)}>Search</button>
@@ -205,7 +216,7 @@ function App() {
       </div>
 
       {/*  NEW HERO ROLLING CINEMA */}
-      {movies.length>0 && (
+      {movies.length>0 && movies[heroIndex] && (
                 <div
           style={{
             ...heroCard,
